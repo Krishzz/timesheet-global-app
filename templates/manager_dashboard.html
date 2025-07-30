@@ -43,11 +43,12 @@
         <tr>
           <th>ID</th>
           <th>Employee</th>
-          <th>Week Start date</th>
-          <th>Week end date</th>
+          <th>Week Start Date</th>
+          <th>Week End Date</th>
           <th>Regular Hours</th>
           <th>Overtime Hours</th>
           <th>Double Time Hours</th>
+          <th>Rejection Comments</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -62,21 +63,79 @@
             <td>{{ ts.overtime_hours }}</td>
             <td>{{ ts.doubletime_hours }}</td>
             <td>
+              {% if ts.rejection_comments %}
+                <span class="text-danger" title="{{ ts.rejection_comments }}">{{ ts.rejection_comments|truncate(30) }}</span>
+              {% else %}
+                <em>—</em>
+              {% endif %}
+            </td>
+            <td>
               <form action="{{ url_for('manager_approve', ts_id=ts.id) }}" method="post" class="d-inline">
                 <button type="submit" class="btn btn-sm btn-success me-2">Approve</button>
               </form>
-              <form action="{{ url_for('manager_reject', ts_id=ts.id) }}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-sm btn-danger">Reject</button>
-              </form>
+              <!-- Reject Button triggers modal -->
+              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal" data-tsid="{{ ts.id }}" data-employee="{{ ts.submitted_by }}">
+                Reject
+              </button>
             </td>
           </tr>
         {% else %}
-          <tr><td colspan="7" class="text-center">No timesheets pending approval.</td></tr>
+          <tr><td colspan="9" class="text-center">No timesheets pending approval.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
+  <!-- Reject Modal -->
+  <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="rejectForm" method="post">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="rejectModalLabel">Reject Timesheet</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Provide rejection comments for <strong id="employeeName"></strong>:</p>
+            <div class="mb-3">
+              <textarea name="rejection_comments" id="rejection_comments" class="form-control" rows="4" required></textarea>
+              <div class="invalid-feedback">Rejection comments are required.</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-danger">Reject</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const rejectModal = document.getElementById('rejectModal')
+    const rejectForm = document.getElementById('rejectForm')
+    const employeeNameSpan = document.getElementById('employeeName')
+    let tsId = null
+
+    rejectModal.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget
+      tsId = button.getAttribute('data-tsid')
+      const employee = button.getAttribute('data-employee')
+      employeeNameSpan.textContent = employee
+      rejectForm.action = `/manager/reject/${tsId}`
+      // Clear previous comments
+      rejectForm.rejection_comments.value = ''
+      rejectForm.classList.remove('was-validated')
+    })
+
+    rejectForm.addEventListener('submit', event => {
+      if (!rejectForm.rejection_comments.value.trim()) {
+        event.preventDefault()
+        event.stopPropagation()
+        rejectForm.classList.add('was-validated')
+      }
+    })
+  </script>
 </body>
 </html>

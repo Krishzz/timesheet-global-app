@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reject Timesheet</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container my-5">
+    <h2>Reject Timesheet for {{ ts.submitted_by }} (Week: {{ ts.week_start }} to {{ ts.week_end }})</h2>
+    <form method="post" class="needs-validation" novalidate>
+      <div class="mb-3">
+        <label for="rejection_comment" class="form-label">Rejection Comment</label>
+        <textarea id="rejection_comment" name="rejection_comment" rows="4" class="form-control" required></textarea>
+        <div class="invalid-feedback">
+          Please provide a reason for rejection.
+        </div>
+      </div>
+      <button type="submit" class="btn btn-danger">Reject Timesheet</button>
+      <a href="{{ url_for('manager_dashboard') }}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const form = document.querySelector('form');
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      });
+    })();
+  </script>
+</body>
+</html>

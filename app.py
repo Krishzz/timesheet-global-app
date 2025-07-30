@@ -19,12 +19,13 @@ class User(db.Model):
 class Timesheet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     week_start = db.Column(db.String(10), nullable=False)
-    week_end = db.Column(db.String(10), nullable=False)  # NEW COLUMN
+    week_end = db.Column(db.String(10), nullable=False)
     regular_hours = db.Column(db.Float, nullable=False)
     overtime_hours = db.Column(db.Float, nullable=False)
     doubletime_hours = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='draft')
     submitted_by = db.Column(db.String(120), nullable=False)
+    rejection_comments = db.Column(db.Text, nullable=True)  # NEW FIELD
 
 # Decorators
 def login_required(f):
@@ -100,7 +101,8 @@ def new_timesheet():
         overtime_hours=overtime_hours,
         doubletime_hours=doubletime_hours,
         status='draft',
-        submitted_by=user.username
+        submitted_by=user.username,
+        rejection_comments=None
     )
     db.session.add(ts)
     db.session.commit()
@@ -123,6 +125,7 @@ def edit_timesheet(ts_id):
         ts.overtime_hours = float(request.form['overtime_hours'])
         ts.doubletime_hours = float(request.form['doubletime_hours'])
         ts.status = 'draft'  # editing moves it back to draft
+        ts.rejection_comments = None  # Clear rejection comments on edit
         db.session.commit()
         flash('Timesheet updated', 'success')
         return redirect(url_for('index'))
@@ -141,6 +144,7 @@ def submit_timesheet(ts_id):
         flash('Timesheet already approved, cannot submit', 'warning')
         return redirect(url_for('index'))
     ts.status = 'submitted'
+    ts.rejection_comments = None  # Clear rejection comments on submit
     db.session.commit()
     flash('Timesheet submitted for approval', 'success')
     return redirect(url_for('index'))
@@ -157,20 +161,30 @@ def manager_dashboard():
 def manager_approve(ts_id):
     ts = Timesheet.query.get_or_404(ts_id)
     ts.status = 'approved'
+    ts.rejection_comments = None
     db.session.commit()
     flash(f'Timesheet for {ts.submitted_by} approved', 'success')
     return redirect(url_for('manager_dashboard'))
+
+# ... other imports and code ...
 
 @app.route('/manager/reject/<int:ts_id>', methods=['POST'])
 @manager_required
 def manager_reject(ts_id):
     ts = Timesheet.query.get_or_404(ts_id)
+    rejection_comments = request.form.get('rejection_comments', '').strip()
+    if not rejection_comments:
+        flash('Rejection comments are required.', 'danger')
+        return redirect(url_for('manager_dashboard'))
+
     ts.status = 'rejected'
+    ts.rejection_comments = rejection_comments
     db.session.commit()
-    flash(f'Timesheet for {ts.submitted_by} rejected', 'danger')
+    flash(f'Timesheet for {ts.submitted_by} rejected with comments.', 'danger')
     return redirect(url_for('manager_dashboard'))
 
 
 if __name__ == "__main__":
-    app.run()
-
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)

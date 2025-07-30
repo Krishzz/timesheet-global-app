@@ -66,7 +66,9 @@
               {% elif ts.status == 'approved' %}
                 <span class="badge bg-success">Approved</span>
               {% elif ts.status == 'rejected' %}
-                <span class="badge bg-danger">Rejected</span>
+                <span class="badge bg-danger" title="{{ ts.rejection_comments }}">{{ ts.status.capitalize() }}</span>
+                <br />
+                <small class="text-danger fst-italic">{{ ts.rejection_comments }}</small>
               {% endif %}
             </td>
             <td>
@@ -145,7 +147,7 @@
           const weekStartInput = document.getElementById('week_start');
           const date = new Date(weekStartInput.value);
 
-          if (date.getDay() !== 1) {
+          if (date.getDay() !== 1) {  // 1 = Monday
             event.preventDefault();
             event.stopPropagation();
             toast.show();
