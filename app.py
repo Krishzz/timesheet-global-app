@@ -41,7 +41,7 @@ def manager_required(f):
     @wraps(f)
     def wrapped(*args, **kwargs):
         if 'user_id' not in session:
-            flash('Please login first', 'danger')
+            flash('Login', 'success')
             return redirect(url_for('login'))
         user = User.query.get(session['user_id'])
         if user.role != 'manager':
