@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manager Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Manager Dashboard</a>
+      <div class="collapse navbar-collapse justify-content-end">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <span class="nav-link">Hello, {{ session.username }}</span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{{ url_for('logout') }}">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-4">
+    <h2>Timesheets Pending Approval</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category=='danger' else category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <table class="table table-hover align-middle">
+      <thead class="table-secondary">
+        <tr>
+          <th>ID</th>
+          <th>Employee</th>
+          <th>Week Start date</th>
+          <th>Week end date</th>
+          <th>Regular Hours</th>
+          <th>Overtime Hours</th>
+          <th>Double Time Hours</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ts in timesheets %}
+          <tr>
+            <td>{{ ts.id }}</td>
+            <td>{{ ts.submitted_by }}</td>
+            <td>{{ ts.week_start }}</td>
+            <td>{{ ts.week_end }}</td>
+            <td>{{ ts.regular_hours }}</td>
+            <td>{{ ts.overtime_hours }}</td>
+            <td>{{ ts.doubletime_hours }}</td>
+            <td>
+              <form action="{{ url_for('manager_approve', ts_id=ts.id) }}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-success me-2">Approve</button>
+              </form>
+              <form action="{{ url_for('manager_reject', ts_id=ts.id) }}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-center">No timesheets pending approval.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
