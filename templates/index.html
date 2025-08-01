@@ -40,7 +40,7 @@
     <form action="{{ url_for('new_timesheet') }}" method="post" class="row g-3 needs-validation" novalidate>
       <div class="col-md-3">
         <label for="week_start" class="form-label">Week Start Date (Monday)</label>
-        <input type="date" class="form-control" id="week_start" name="week_start" required />
+        <input type="date" class="form-control" id="week_start" name="week_start" max="{{ today }}" required />
         <div class="invalid-feedback">Please provide a valid week start date.</div>
       </div>
       <div class="col-md-3">

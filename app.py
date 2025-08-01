@@ -194,7 +194,6 @@ def edit_timesheet(ts_id):
 @app.route('/submit_timesheet/<int:ts_id>', methods=['POST'])
 @login_required
 def submit_timesheet(ts_id):
-    print(f"Submitting timesheet {ts_id}")
     user = User.query.get(session['user_id'])
     ts = Timesheet.query.get_or_404(ts_id)
     if ts.submitted_by != user.username:
@@ -243,7 +242,6 @@ def manager_dashboard():
     # Get start_date and end_date from query params or use defaults
     start_date_str = request.args.get('start_date', default_start_date.isoformat())
     end_date_str = request.args.get('end_date', default_end_date.isoformat())
-    print(f"Start date: {start_date_str}, End date: {end_date_str}")
 
     try:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
@@ -358,4 +356,4 @@ def export_timesheets():
                      as_attachment=True)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
